@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --space-black: #030305;
+    --space-black: #030305;      /* Outer Space Black background */
     --ink: #eceef2;
     --muted: #8b90a0;
     --line: rgba(255, 255, 255, 0.12);
@@ -40,6 +40,22 @@
   }
 
   /* ---------- Animated background ---------- */
+  #glow {
+    position: fixed;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(38% 34% at 18% 24%, rgba(88, 101, 242, 0.17), transparent 70%),
+      radial-gradient(34% 30% at 82% 68%, rgba(0, 190, 175, 0.11), transparent 70%),
+      radial-gradient(30% 28% at 72% 14%, rgba(168, 92, 225, 0.12), transparent 70%),
+      radial-gradient(28% 26% at 28% 82%, rgba(60, 140, 255, 0.10), transparent 70%);
+    animation: glowDrift 45s ease-in-out infinite alternate;
+  }
+  @keyframes glowDrift {
+    from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
+    to   { transform: translate3d(2%, 2%, 0) scale(1.1); }
+  }
   #bg {
     position: fixed;
     inset: 0;
@@ -122,6 +138,24 @@
   .card:hover { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.08); }
   .card-title { margin: 0; font-size: 17px; font-weight: 500; }
   .card-desc { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+  .warn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffc978;
+    background: rgba(255, 190, 90, 0.12);
+    border: 1px solid rgba(255, 190, 90, 0.35);
+    border-radius: 999px;
+  }
+
+  .warn.tablet {
+    color: #f3e08a;
+    background: rgba(240, 215, 90, 0.10);
+    border-color: rgba(240, 215, 90, 0.32);
+  }
 
   /* ---------- Dropdown (Home-made Projects) ---------- */
   .more-wrap { margin-top: -40px; padding-bottom: 20px; }
@@ -224,11 +258,13 @@
   @media (prefers-reduced-motion: reduce) {
     .reveal { animation-duration: 0.01s; animation-delay: 0s; }
     .overlay, .info-box, .dropdown, .dropdown-inner, .more-btn .chev { transition: none; }
+    #glow { animation: none; }
   }
 </style>
 </head>
 <body>
 
+<div id="glow" aria-hidden="true"></div>
 <canvas id="bg" aria-hidden="true"></canvas>
 
 <button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
@@ -265,20 +301,28 @@ const INFO_TEXT = [
 
         name:        what the card is called
         url:         the GitHub Pages link (https://yourname.github.io/repo/)
-        description: a short line under the name (can be left as "")       */
+        description: a short line under the name (can be left as "")
+        mobile:      OPTIONAL warning tag on that box. Leave it out if the site
+                     works fine on phones.
+                       mobile: false      ->  "Not mobile supported"
+                       mobile: "tablet"   ->  "Works on tablets, probably not phones"
+
+      Examples:
+      { name: "My Site", url: "https://...", description: "...", mobile: false },
+      { name: "My Site", url: "https://...", description: "...", mobile: "tablet" },   */
 const PROJECTS = {
   "Newer Projects": [
     { name: "Banneker Project", url: "https://0audacity0.github.io/Banneker-Project/", description: "This was used in class during Week 9." },
-    { name: "Cassini Project", url: "https://0audacity0.github.io/Cassini-Project/", description: "This was used in class during Week 7 or 8. (I think)" }
+    { name: "Cassini Project", url: "https://0audacity0.github.io/Cassini-Project/", description: "This was used in class during Week 7 or 8. (I think)", mobile: "tablet" }
   ],
 
   "Semi-Old Projects": [
-    { name: "Galileo Project", url: "https://0audacity0.github.io/Galileo-Project/", description: "Forgot which week this was made." }
+    { name: "Galileo Project", url: "https://0audacity0.github.io/Galileo-Project/", description: "Forgot which week this was made.", mobile: "tablet" }
   ],
 
   "Older Projects": [
     { name: "Kepler Project", url: "https://0audacity0.github.io/Kepler-Project/", description: "Forgot which week this was made, and might be a little weird/buggy." },
-    { name: "Planets Project", url: "https://0audacity0.github.io/Planets-Project/", description: "First project ever made, and quite frankly does not look all too appealing, considering my projects look better." }
+    { name: "Planets Project", url: "https://0audacity0.github.io/Planets-Project/", description: "First project ever made, and quite frankly does not look all too appealing, considering my projects look better.", mobile: "tablet" }
   ]
 };
 
@@ -397,6 +441,15 @@ function makeCard(site) {
     desc.textContent = site.description;
     card.appendChild(desc);
   }
+
+  if (site.mobile === false || site.mobile === "tablet") {
+    const warn = document.createElement("span");
+    warn.className = "warn" + (site.mobile === "tablet" ? " tablet" : "");
+    warn.textContent = site.mobile === "tablet"
+      ? "\u26A0 Works on tablets, probably not phones"
+      : "\u26A0 Not mobile supported";
+    card.appendChild(warn);
+  }
   return card;
 }
 
@@ -421,14 +474,15 @@ closeBtn.addEventListener("click", closeInfo);
 overlay.addEventListener("click", e => { if (e.target === overlay) closeInfo(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeInfo(); });
 
-/* ---------- Background: white lines wander down from the top ---------- */
+/* ---------- Background: nebula glow, twinkling stars, shooting stars, wandering lines ---------- */
 (function () {
   const canvas = document.getElementById("bg");
   const ctx = canvas.getContext("2d");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let W = 0, H = 0, lines = [];
-
   const rand = (a, b) => a + Math.random() * (b - a);
+  const TINTS = ["255,255,255", "255,255,255", "255,255,255", "190,210,255", "255,225,190"];
+  let W = 0, H = 0, lines = [], stars = [];
+  let shooter = null, nextShooter = rand(2, 5);
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -437,11 +491,102 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.cl
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.max(8, Math.min(24, Math.round(W / 80)));
-    while (lines.length < count) lines.push(newLine(true));
-    lines.length = count;
+
+    const lineCount = Math.max(8, Math.min(24, Math.round(W / 80)));
+    while (lines.length < lineCount) lines.push(newLine(true));
+    lines.length = lineCount;
+
+    const starCount = Math.max(90, Math.min(320, Math.round(W * H / 7000)));
+    while (stars.length < starCount) stars.push(newStar());
+    stars.length = starCount;
+
+    if (reduceMotion) drawStars(0, true);
   }
 
+  /* ---- stars (positions are 0..1 so they survive resizing) ---- */
+  function newStar() {
+    const r = Math.pow(Math.random(), 2.2) * 1.5 + 0.4; // mostly tiny, a few bigger
+    return {
+      x: Math.random(), y: Math.random(),
+      r: r,
+      drift: r * rand(1.5, 4),            // bigger = closer = drifts faster (px/sec)
+      phase: rand(0, 6.28), tw: rand(0.5, 2.2),
+      base: rand(0.35, 0.95),
+      c: TINTS[Math.floor(Math.random() * TINTS.length)]
+    };
+  }
+
+  function drawStars(t, still) {
+    for (const s of stars) {
+      const a = still ? s.base * 0.8 : s.base * (0.55 + 0.45 * Math.sin(t * s.tw + s.phase));
+      ctx.fillStyle = "rgba(" + s.c + "," + a.toFixed(2) + ")";
+      const x = s.x * W, y = s.y * H;
+      if (s.r < 1) {
+        ctx.fillRect(x, y, s.r * 1.4, s.r * 1.4);
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, s.r * 0.8, 0, 6.2832);
+        ctx.fill();
+      }
+    }
+  }
+
+  function moveStars(dt) {
+    for (const s of stars) {
+      s.y += s.drift * dt / H;
+      if (s.y > 1) { s.y = 0; s.x = Math.random(); }
+    }
+  }
+
+  /* ---- shooting stars ---- */
+  function spawnShooter() {
+    const dir = Math.random() < 0.5 ? 1 : -1;
+    const ang = rand(0.4, 0.8);
+    const spd = rand(700, 1100);
+    return {
+      x: dir === 1 ? rand(0, W * 0.6) : rand(W * 0.4, W),
+      y: rand(-20, H * 0.35),
+      vx: Math.cos(ang) * spd * dir, vy: Math.sin(ang) * spd,
+      spd: spd, len: rand(120, 230),
+      life: 0, max: rand(0.7, 1.2)
+    };
+  }
+
+  function stepShooter(dt) {
+    if (!shooter) {
+      nextShooter -= dt;
+      if (nextShooter <= 0) shooter = spawnShooter();
+      return;
+    }
+    shooter.x += shooter.vx * dt;
+    shooter.y += shooter.vy * dt;
+    shooter.life += dt;
+    if (shooter.life >= shooter.max) { shooter = null; nextShooter = rand(4, 10); }
+  }
+
+  function drawShooter() {
+    if (!shooter) return;
+    const s = shooter;
+    const a = Math.sin(Math.PI * Math.min(s.life / s.max, 1));
+    const tx = s.x - (s.vx / s.spd) * s.len;
+    const ty = s.y - (s.vy / s.spd) * s.len;
+    const g = ctx.createLinearGradient(tx, ty, s.x, s.y);
+    g.addColorStop(0, "rgba(180,205,255,0)");
+    g.addColorStop(1, "rgba(255,255,255," + (0.9 * a).toFixed(2) + ")");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(s.x, s.y);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255," + a.toFixed(2) + ")";
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, 1.6, 0, 6.2832);
+    ctx.fill();
+  }
+
+  /* ---- wandering lines ---- */
   function newLine(firstTime) {
     return {
       x: rand(0, W),
@@ -458,7 +603,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.cl
     };
   }
 
-  function step(l, dt) {
+  function stepLine(l, dt) {
     if (l.wait > 0) { l.wait -= dt; return; }
     const offscreen = l.y > H + 20;
     if (!offscreen) {
@@ -475,7 +620,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.cl
     }
   }
 
-  function draw(l) {
+  function drawLine(l) {
     const n = l.pts.length / 2;
     if (n < 2) return;
     ctx.lineWidth = l.width;
@@ -490,12 +635,21 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.cl
     }
   }
 
+  /* ---- main loop ---- */
   let last = performance.now();
   function frame(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     ctx.clearRect(0, 0, W, H);
-    for (const l of lines) { step(l, dt); draw(l); }
+
+    moveStars(dt);
+    drawStars(now / 1000, false);
+
+    for (const l of lines) { stepLine(l, dt); drawLine(l); }
+
+    stepShooter(dt);
+    drawShooter();
+
     requestAnimationFrame(frame);
   }
 
