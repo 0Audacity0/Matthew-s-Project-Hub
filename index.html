@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Projects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --space-black: #030305;      /* Outer Space Black background */
+    --ink: #eceef2;
+    --muted: #8b90a0;
+    --line: rgba(255, 255, 255, 0.12);
+    --panel: rgba(18, 19, 26, 0.92);
+    --accent: #7aa2ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--space-black);
+    color: var(--ink);
+    font-family: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  body { min-height: 100vh; }
+
+  /* ---------- Fade in + move up on load ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    animation: riseIn 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 120ms + 100ms);
+  }
+  @keyframes riseIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Info button ---------- */
+  .info-btn {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 20;
+    font: inherit;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .info-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); }
+  .info-btn:focus-visible, .close-btn:focus-visible, .card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Main content ---------- */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 90px 24px 120px;
+  }
+
+  section { margin-bottom: 72px; }
+
+  h1.section-title {
+    font-size: clamp(30px, 5vw, 52px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0 0 8px;
+  }
+
+  .section-rule {
+    height: 1px;
+    background: var(--line);
+    margin: 18px 0 26px;
+  }
+
+  .empty {
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  /* ---------- Website boxes ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    display: block;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card:hover { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.08); }
+  .card-title { margin: 0; font-size: 15px; font-weight: 500; }
+  .card-desc { margin: 4px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+
+  /* ---------- Info popup ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.45);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s, visibility 0.25s;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+
+  .info-box {
+    width: min(460px, 100%);
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 26px 28px 28px;
+    transform: translateY(14px) scale(0.98);
+    transition: transform 0.25s;
+  }
+  .overlay.open .info-box { transform: none; }
+
+  .info-box h2 {
+    margin: 0 0 14px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .info-box p {
+    margin: 0 0 14px;
+    color: #c9ccd6;
+    line-height: 1.6;
+    font-size: 15px;
+    white-space: pre-line;
+  }
+
+  .close-btn {
+    display: block;
+    margin: 18px auto 0;
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 18px;
+    cursor: pointer;
+  }
+  .close-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { animation-duration: 0.01s; animation-delay: 0s; }
+    .overlay, .info-box { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
+
+<main id="main"></main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="info-box">
+    <h2 id="infoTitle">Info</h2>
+    <div id="infoText"></div>
+    <button class="close-btn" id="closeInfo">Close</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   EDIT THIS PART  ✏️
+   ===================================================================== */
+
+/* 1) The text inside the Info box.
+      Each string is its own paragraph. Add, remove, or change lines freely. */
+const INFO_TEXT = [
+  "Welcome! This is where I keep all of my websites.",
+  "Edit this text in the INFO_TEXT list at the top of the file's script."
+];
+
+/* 2) Your websites.
+      Put each site inside the section you want it to appear under.
+      Copy a whole { ... }, line to add another one. The order here is the
+      order they show up on the page (first = top left).
+
+        name:        what the card is called
+        url:         the GitHub Pages link (https://yourname.github.io/repo/)
+        description: a short line under the name (can be left as "")       */
+const PROJECTS = {
+  "Newer Projects": [
+    { name: "Example Site", url: "https://pages.github.com/", description: "Replace me with one of your GitHub Pages sites." }
+  ],
+
+  "Semi-New Projects": [
+    // { name: "My Site", url: "https://yourname.github.io/my-site/", description: "What it is" },
+  ],
+
+  "Older Projects": [
+    // { name: "My Old Site", url: "https://yourname.github.io/old-site/", description: "What it is" },
+  ]
+};
+
+/* =====================================================================
+   You don't need to touch anything below this line
+   ===================================================================== */
+
+const main = document.getElementById("main");
+let step = 1;
+
+Object.entries(PROJECTS).forEach(([title, sites]) => {
+  const section = document.createElement("section");
+  section.className = "reveal";
+  section.style.setProperty("--i", step++);
+
+  const h = document.createElement("h1");
+  h.className = "section-title";
+  h.textContent = title;
+  section.appendChild(h);
+
+  const rule = document.createElement("div");
+  rule.className = "section-rule";
+  section.appendChild(rule);
+
+  if (!sites.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "No websites here yet.";
+    section.appendChild(p);
+  } else {
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    sites.forEach(site => grid.appendChild(makeCard(site)));
+    section.appendChild(grid);
+  }
+
+  main.appendChild(section);
+});
+
+function makeCard(site) {
+  const card = document.createElement("a");
+  card.className = "card";
+  card.href = site.url;
+  card.target = "_blank";
+  card.rel = "noopener";
+
+  const name = document.createElement("h3");
+  name.className = "card-title";
+  name.textContent = site.name;
+  card.appendChild(name);
+
+  if (site.description) {
+    const desc = document.createElement("p");
+    desc.className = "card-desc";
+    desc.textContent = site.description;
+    card.appendChild(desc);
+  }
+  return card;
+}
+
+/* Info text */
+const infoText = document.getElementById("infoText");
+INFO_TEXT.forEach(line => {
+  const p = document.createElement("p");
+  p.textContent = line;
+  infoText.appendChild(p);
+});
+
+/* Info popup open / close */
+const overlay = document.getElementById("overlay");
+const openBtn = document.getElementById("openInfo");
+const closeBtn = document.getElementById("closeInfo");
+
+function openInfo()  { overlay.classList.add("open"); closeBtn.focus(); }
+function closeInfo() { overlay.classList.remove("open"); openBtn.focus(); }
+
+openBtn.addEventListener("click", openInfo);
+closeBtn.addEventListener("click", closeInfo);
+overlay.addEventListener("click", e => { if (e.target === overlay) closeInfo(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeInfo(); });
+</script>
+</body>
+</html>
