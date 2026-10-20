@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Matthew's Sick Ahh Project Hub</title>
+<title>Matthew's Project Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
@@ -38,6 +38,17 @@
   @keyframes riseIn {
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* ---------- Animated background ---------- */
+  #bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  main { position: relative; z-index: 1; }
 
   /* ---------- Info button ---------- */
   .info-btn {
@@ -179,6 +190,8 @@
 </head>
 <body>
 
+<canvas id="bg" aria-hidden="true"></canvas>
+
 <button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
 
 <main id="main"></main>
@@ -193,14 +206,15 @@
 
 <script>
 /* =====================================================================
-   Stop srolling through my code
+  Stop lookin' through my code
    ===================================================================== */
 
 /* 1) The text inside the Info box.
       Each string is its own paragraph. Add, remove, or change lines freely. */
 const INFO_TEXT = [
-  "Hallo, This is where I keep all of my school projects to make them public.",
-  "The school project's I (Matthew) added here can be visited by clicking on them.."
+  "Hallo, this is where I keep all of my current school projects and make them public to people!.",
+  "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project."
+  "The newer a school project is, it will be put in the Newer Projects category, if a project is old, it will be put inside the Older Projects category. For the ones that are not too old or too new, they'll be put in the Semi-Old category."
 ];
 
 /* 2) Your websites.
@@ -213,20 +227,22 @@ const INFO_TEXT = [
         description: a short line under the name (can be left as "")       */
 const PROJECTS = {
   "Newer Projects": [
-    { name: "Example Site", url: "https://pages.github.com/", description: "Replace me with one of your GitHub Pages sites." }
+    { name: "Banneker Project", url: "https://github.com/0Audacity0/Banneker-Project/settings/pages", description: "This was used in class during Week 9." }
+    { name: "Cassini Project", url: "https://github.com/0Audacity0/Cassini-Project/settings/pages", description: "This was used in class during Week 7 or 8. (I think)" }
   ],
 
-  "Semi-New Projects": [
-    // { name: "My Site", url: "https://yourname.github.io/my-site/", description: "What it is" },
+  "Semi-Old Projects": [
+   { name: "Galileo Project", url: "https://0audacity0.github.io/Galileo-Project/", description: "Forgot which week this was made." }
   ],
 
   "Older Projects": [
-    // { name: "My Old Site", url: "https://yourname.github.io/old-site/", description: "What it is" },
+   { name: "Kepler Project", url: "https://0audacity0.github.io/Kepler-Project/", description: "Forgot which week this was made, and might be a little weird/buggy." }
+   { name: "Planets Project", url: "https://0audacity0.github.io/Planets-Project/", description: "First project ever made, and quite frankly does not look all too appealing, considering my projects look better." }
   ]
 };
 
 /* =====================================================================
-   You don't need to touch anything below this line
+   Do NOT touch anything below this
    ===================================================================== */
 
 const main = document.getElementById("main");
@@ -302,6 +318,89 @@ openBtn.addEventListener("click", openInfo);
 closeBtn.addEventListener("click", closeInfo);
 overlay.addEventListener("click", e => { if (e.target === overlay) closeInfo(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeInfo(); });
+
+/* ---------- Background: white lines wander down from the top ---------- */
+(function () {
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W = 0, H = 0, lines = [];
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.max(8, Math.min(24, Math.round(W / 80)));
+    while (lines.length < count) lines.push(newLine(true));
+    lines.length = count;
+  }
+
+  function newLine(firstTime) {
+    return {
+      x: rand(0, W),
+      y: -10,
+      t: rand(0, 100),
+      speed: rand(70, 170),            // pixels per second
+      trail: Math.floor(rand(100, 260)), // how long the line is
+      a1: rand(0.25, 0.7), f1: rand(0.25, 0.8), p1: rand(0, 6.28),
+      a2: rand(0.1, 0.35), f2: rand(0.8, 1.8), p2: rand(0, 6.28),
+      width: rand(0.8, 1.6),
+      alpha: rand(0.3, 0.7),
+      wait: firstTime ? rand(0, 4) : rand(0.2, 3), // seconds before it starts
+      pts: []
+    };
+  }
+
+  function step(l, dt) {
+    if (l.wait > 0) { l.wait -= dt; return; }
+    const offscreen = l.y > H + 20;
+    if (!offscreen) {
+      l.t += dt;
+      // Smooth wandering, always heading downward
+      const ang = Math.PI / 2 + l.a1 * Math.sin(l.t * l.f1 + l.p1) + l.a2 * Math.sin(l.t * l.f2 + l.p2);
+      l.x += Math.cos(ang) * l.speed * dt;
+      l.y += Math.sin(ang) * l.speed * dt;
+      l.pts.push(l.x, l.y);
+      if (l.pts.length > l.trail * 2) l.pts.splice(0, 2);
+    } else {
+      l.pts.splice(0, 2); // head is gone, let the tail slide off
+      if (l.pts.length < 4) Object.assign(l, newLine(false), { x: rand(0, W) });
+    }
+  }
+
+  function draw(l) {
+    const n = l.pts.length / 2;
+    if (n < 2) return;
+    ctx.lineWidth = l.width;
+    ctx.lineCap = "round";
+    for (let i = 1; i < n; i++) {
+      const fade = Math.pow(i / n, 1.6) * l.alpha;
+      ctx.strokeStyle = "rgba(255,255,255," + fade.toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.moveTo(l.pts[(i - 1) * 2], l.pts[(i - 1) * 2 + 1]);
+      ctx.lineTo(l.pts[i * 2], l.pts[i * 2 + 1]);
+      ctx.stroke();
+    }
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    ctx.clearRect(0, 0, W, H);
+    for (const l of lines) { step(l, dt); draw(l); }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("resize", resize);
+  resize();
+  if (!reduceMotion) requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
