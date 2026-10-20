@@ -66,6 +66,22 @@
   }
   main { position: relative; z-index: 1; }
 
+  /* ---------- Version label (top left) ---------- */
+  .version {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    z-index: 20;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    user-select: none;
+  }
+
   /* ---------- Info button ---------- */
   .info-btn {
     position: fixed;
@@ -267,6 +283,8 @@
 <div id="glow" aria-hidden="true"></div>
 <canvas id="bg" aria-hidden="true"></canvas>
 
+<div class="version reveal" id="version" style="--i:0"></div>
+
 <button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
 
 <main id="main"></main>
@@ -330,12 +348,18 @@ const PROJECTS = {
       under "Older Projects"). Same format as above. */
 const HOME_PROJECTS = [
   { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
-  { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." }
+  { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." },
+  { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." }
 ];
+
+/* 4) The version number shown in the top left corner. */
+const VERSION = "v1.1.0";
 
 /* =====================================================================
    Do NOT touch anything below this
    ===================================================================== */
+
+document.getElementById("version").textContent = VERSION;
 
 const main = document.getElementById("main");
 let step = 1;
