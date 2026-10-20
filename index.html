@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --space-black: #030305;      /* Outer Space Black background */
+    --space-black: #030305;
     --ink: #eceef2;
     --muted: #8b90a0;
     --line: rgba(255, 255, 255, 0.12);
@@ -105,23 +105,62 @@
   /* ---------- Website boxes ---------- */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
   }
 
   .card {
     display: block;
-    padding: 12px 14px;
+    padding: 16px 18px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.04);
     color: inherit;
     text-decoration: none;
     transition: border-color 0.2s, background 0.2s;
   }
   .card:hover { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.08); }
-  .card-title { margin: 0; font-size: 15px; font-weight: 500; }
-  .card-desc { margin: 4px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+  .card-title { margin: 0; font-size: 17px; font-weight: 500; }
+  .card-desc { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+  /* ---------- Dropdown (Home-made Projects) ---------- */
+  .more-wrap { margin-top: -40px; padding-bottom: 20px; }
+
+  .more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font: inherit;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .more-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); }
+  .more-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .more-btn .chev { display: inline-block; transition: transform 0.3s; font-size: 12px; }
+  .more-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+  .dropdown {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s ease;
+  }
+  .dropdown.open { grid-template-rows: 1fr; }
+  .dropdown-inner {
+    min-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s ease, visibility 0.4s;
+  }
+  .dropdown.open .dropdown-inner { visibility: visible; opacity: 1; }
+  .dropdown-inner > .dropdown-content { padding-top: 48px; }
 
   /* ---------- Info popup ---------- */
   .overlay {
@@ -184,7 +223,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .reveal { animation-duration: 0.01s; animation-delay: 0s; }
-    .overlay, .info-box { transition: none; }
+    .overlay, .info-box, .dropdown, .dropdown-inner, .more-btn .chev { transition: none; }
   }
 </style>
 </head>
@@ -210,10 +249,11 @@
    ===================================================================== */
 
 /* 1) The text inside the Info box.
-      Each string is its own paragraph. Add, remove, or change lines freely. */
+      Each string is its own paragraph. Add, remove, or change lines freely.
+      (Every line needs a comma at the end, except the last one.) */
 const INFO_TEXT = [
   "Hallo, this is where I keep all of my current school projects and make them public to people!.",
-  "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project."
+  "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project.",
   "The newer a school project is, it will be put in the Newer Projects category, if a project is old, it will be put inside the Older Projects category. For the ones that are not too old or too new, they'll be put in the Semi-Old category."
 ];
 
@@ -221,25 +261,33 @@ const INFO_TEXT = [
       Put each site inside the section you want it to appear under.
       Copy a whole { ... }, line to add another one. The order here is the
       order they show up on the page (first = top left).
+      (Every { ... } needs a comma after it, except the last one in a section.)
 
         name:        what the card is called
         url:         the GitHub Pages link (https://yourname.github.io/repo/)
         description: a short line under the name (can be left as "")       */
 const PROJECTS = {
   "Newer Projects": [
-    { name: "Banneker Project", url: "https://github.com/0Audacity0/Banneker-Project/settings/pages", description: "This was used in class during Week 9." }
-    { name: "Cassini Project", url: "https://github.com/0Audacity0/Cassini-Project/settings/pages", description: "This was used in class during Week 7 or 8. (I think)" }
+    { name: "Banneker Project", url: "https://0audacity0.github.io/Banneker-Project/", description: "This was used in class during Week 9." },
+    { name: "Cassini Project", url: "https://0audacity0.github.io/Cassini-Project/", description: "This was used in class during Week 7 or 8. (I think)" }
   ],
 
   "Semi-Old Projects": [
-   { name: "Galileo Project", url: "https://0audacity0.github.io/Galileo-Project/", description: "Forgot which week this was made." }
+    { name: "Galileo Project", url: "https://0audacity0.github.io/Galileo-Project/", description: "Forgot which week this was made." }
   ],
 
   "Older Projects": [
-   { name: "Kepler Project", url: "https://0audacity0.github.io/Kepler-Project/", description: "Forgot which week this was made, and might be a little weird/buggy." }
-   { name: "Planets Project", url: "https://0audacity0.github.io/Planets-Project/", description: "First project ever made, and quite frankly does not look all too appealing, considering my projects look better." }
+    { name: "Kepler Project", url: "https://0audacity0.github.io/Kepler-Project/", description: "Forgot which week this was made, and might be a little weird/buggy." },
+    { name: "Planets Project", url: "https://0audacity0.github.io/Planets-Project/", description: "First project ever made, and quite frankly does not look all too appealing, considering my projects look better." }
   ]
 };
+
+/* 3) Your Home-made Projects (shows when you click the dropdown button
+      under "Older Projects"). Same format as above. */
+const HOME_PROJECTS = [
+  { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
+  { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." }
+];
 
 /* =====================================================================
    Do NOT touch anything below this
@@ -276,6 +324,60 @@ Object.entries(PROJECTS).forEach(([title, sites]) => {
 
   main.appendChild(section);
 });
+
+/* Dropdown: "Home-made Projects" */
+(function () {
+  const wrap = document.createElement("div");
+  wrap.className = "more-wrap reveal";
+  wrap.style.setProperty("--i", step++);
+
+  const btn = document.createElement("button");
+  btn.className = "more-btn";
+  btn.setAttribute("aria-expanded", "false");
+  btn.setAttribute("aria-controls", "homeDropdown");
+  btn.innerHTML = 'More <span class="chev" aria-hidden="true">&#9660;</span>';
+
+  const dd = document.createElement("div");
+  dd.className = "dropdown";
+  dd.id = "homeDropdown";
+
+  const inner = document.createElement("div");
+  inner.className = "dropdown-inner";
+  const content = document.createElement("div");
+  content.className = "dropdown-content";
+
+  const h = document.createElement("h1");
+  h.className = "section-title";
+  h.textContent = "Home-made Projects";
+  content.appendChild(h);
+
+  const rule = document.createElement("div");
+  rule.className = "section-rule";
+  content.appendChild(rule);
+
+  if (!HOME_PROJECTS.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "No websites here yet.";
+    content.appendChild(p);
+  } else {
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    HOME_PROJECTS.forEach(site => grid.appendChild(makeCard(site)));
+    content.appendChild(grid);
+  }
+
+  inner.appendChild(content);
+  dd.appendChild(inner);
+  wrap.appendChild(btn);
+  wrap.appendChild(dd);
+  main.appendChild(wrap);
+
+  btn.addEventListener("click", () => {
+    const open = dd.classList.toggle("open");
+    btn.setAttribute("aria-expanded", String(open));
+  });
+})();
 
 function makeCard(site) {
   const card = document.createElement("a");
