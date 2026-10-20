@@ -306,12 +306,13 @@
       Each string is its own paragraph. Add, remove, or change lines freely.
       (Every line needs a comma at the end, except the last one.) */
 const INFO_TEXT = [
-  "Hallo, this is where I keep all of my current school projects and make them public to people!.",
-  "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project.",
+  "Hallo, this is where I keep all of my current school projects and make them public to people!",
+  "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project and so on.",
+  "Also, a lot of the school projects here will most likely not work on phones, so best if you use a tablet or computer!",
   "The newer a school project is, it will be put in the Newer Projects category, if a project is old, it will be put inside the Older Projects category. For the ones that are not too old or too new, they'll be put in the Semi-Old category."
 ];
 
-/* 2) Your websites.
+/* 2) My projects.
       Put each site inside the section you want it to appear under.
       Copy a whole { ... }, line to add another one. The order here is the
       order they show up on the page (first = top left).
@@ -353,7 +354,7 @@ const HOME_PROJECTS = [
 ];
 
 /* 4) The version number shown in the top left corner. */
-const VERSION = "v1.1.0";
+const VERSION = "v1.2.0";
 
 /* =====================================================================
    Do NOT touch anything below this
@@ -416,7 +417,7 @@ Object.entries(PROJECTS).forEach(([title, sites]) => {
 
   const h = document.createElement("h1");
   h.className = "section-title";
-  h.textContent = "Home-made Projects";
+  h.textContent = "Projects";
   content.appendChild(h);
 
   const rule = document.createElement("div");
