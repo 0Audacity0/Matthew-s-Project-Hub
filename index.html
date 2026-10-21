@@ -173,6 +173,18 @@
     border-color: rgba(240, 215, 90, 0.32);
   }
 
+  .preview-box {
+    margin-top: 12px;
+    padding: 9px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #ff9a9a;
+    background: rgba(255, 70, 70, 0.12);
+    border: 1px solid rgba(255, 80, 80, 0.5);
+    border-radius: 8px;
+  }
+  .preview-box strong { color: #ff6b6b; font-weight: 700; }
+
   /* ---------- Dropdown (Home-made Projects) ---------- */
   .more-wrap { margin-top: -40px; padding-bottom: 20px; }
 
@@ -326,6 +338,10 @@ const INFO_TEXT = [
                        mobile: false      ->  "Not mobile supported"
                        mobile: "tablet"   ->  "Works on tablets, probably not phones"
 
+        preview:     OPTIONAL. Put  preview: "yes"  at the end of a project to show
+                     a red box inside it saying it's a placeholder and not released
+                     yet. (preview: true works too.) Leave it out for released ones.
+
       Examples:
       { name: "My Site", url: "https://...", description: "...", mobile: false },
       { name: "My Site", url: "https://...", description: "...", mobile: "tablet" },   */
@@ -350,11 +366,12 @@ const PROJECTS = {
 const HOME_PROJECTS = [
   { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
   { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." },
-  { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." }
+  { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." },
+  { name: "Buckshot Roulette (But Bad)", url: "https://0audacity0.github.io/Buckshot-Roulette-but-bad/", description: " ", preview: yes }
 ];
 
 /* 4) The version number shown in the top left corner. */
-const VERSION = "v1.2.0";
+const VERSION = "v1.3.0";
 
 /* =====================================================================
    Do NOT touch anything below this
@@ -474,6 +491,12 @@ function makeCard(site) {
       ? "\u26A0 Works on tablets, probably not phones"
       : "\u26A0 Not mobile supported";
     card.appendChild(warn);
+  }
+  if (site.preview === true || String(site.preview).toLowerCase() === "yes") {
+    const box = document.createElement("div");
+    box.className = "preview-box";
+    box.innerHTML = "<strong>\u26A0 Placeholder</strong><br>This project is a placeholder and has not been released yet.";
+    card.appendChild(box);
   }
   return card;
 }
