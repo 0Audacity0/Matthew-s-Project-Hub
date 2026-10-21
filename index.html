@@ -142,17 +142,69 @@
   }
 
   .card {
+    --mx: 50%;
+    --my: 50%;
+    position: relative;
     display: block;
-    padding: 16px 18px;
+    overflow: hidden;
+    padding: 18px 20px 20px;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02));
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 26px rgba(0, 0, 0, 0.3);
     color: inherit;
     text-decoration: none;
-    transition: border-color 0.2s, background 0.2s;
+    transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s;
   }
-  .card:hover { border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.08); }
-  .card-title { margin: 0; font-size: 17px; font-weight: 500; }
+  /* soft spotlight that follows the cursor */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(240px circle at var(--mx) var(--my), rgba(122, 162, 255, 0.2), transparent 65%);
+  }
+  /* thin glowing line along the top edge */
+  .card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0.35;
+    transition: opacity 0.25s;
+    background: linear-gradient(90deg, transparent, rgba(122, 162, 255, 0.8), transparent);
+  }
+  .card > * { position: relative; }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(122, 162, 255, 0.55);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1) inset, 0 16px 34px rgba(0, 0, 0, 0.4), 0 0 28px rgba(122, 162, 255, 0.16);
+  }
+  .card:hover::before, .card:hover::after { opacity: 1; }
+  .card-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 500;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .card-arrow {
+    flex: none;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.3;
+    transition: transform 0.25s ease, color 0.25s;
+  }
+  .card:hover .card-arrow { transform: translate(3px, -3px); color: var(--accent); }
   .card-desc { margin: 6px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
 
   .warn {
@@ -285,7 +337,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .reveal { animation-duration: 0.01s; animation-delay: 0s; }
-    .overlay, .info-box, .dropdown, .dropdown-inner, .more-btn .chev { transition: none; }
+    .overlay, .info-box, .dropdown, .dropdown-inner, .more-btn .chev, .card, .card::before, .card::after, .card-arrow { transition: none; }
+    .card:hover { transform: none; }
     #glow { animation: none; }
   }
 </style>
@@ -328,7 +381,8 @@ const INFO_TEXT = [
   "Hallo, this is where I keep all of my current school projects and make them public to people!",
   "This is also meant for posting my 'Home Projects' like Voxel Project and Gambling Project and so on.",
   "Also, a lot of the school projects here will most likely not work on phones, so best if you use a tablet or computer!",
-  "The newer a school project is, it will be put in the Newer Projects category, if a project is old, it will be put inside the Older Projects category. For the ones that are not too old or too new, they'll be put in the Semi-Old category."
+  "The newer a school project is, it will be put in the Newer Projects category, if a project is old, it will be put inside the Older Projects category. For the ones that are not too old or too new, they'll be put in the Semi-Old category.",
+  "Oh, and don't try and find a way to get past previewed projects."
 ];
 
 /* 2) My projects.
@@ -374,11 +428,11 @@ const HOME_PROJECTS = [
   { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
   { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." },
   { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." },
-  { name: "Buckshot Roulette (But Bad)", url: "https://0audacity0.github.io/Buckshot-Roulette-but-bad/", description: " ", preview: "yes", releaseDate: "October 24th, 2026" }
+  { name: "Buckshot Roulette But Bad (Or better?)", url: "https://0audacity0.github.io/Be-Patient-Yo/", description: " ", preview: "yes", releaseDate: "October 24th, 2026" }
 ];
 
 /* 4) The version number shown in the top left corner. */
-const VERSION = "v1.3.0";
+const VERSION = "v1.4.0";
 
 /* =====================================================================
    Do NOT touch anything below this
@@ -478,10 +532,20 @@ function makeCard(site) {
   card.href = site.url;
   card.target = "_blank";
   card.rel = "noopener";
+  card.addEventListener("pointermove", e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty("--mx", (e.clientX - r.left) + "px");
+    card.style.setProperty("--my", (e.clientY - r.top) + "px");
+  });
 
   const name = document.createElement("h3");
   name.className = "card-title";
   name.textContent = site.name;
+  const arrow = document.createElement("span");
+  arrow.className = "card-arrow";
+  arrow.setAttribute("aria-hidden", "true");
+  arrow.textContent = "\u2197";
+  if (!(site.preview === true || String(site.preview).toLowerCase() === "yes")) name.appendChild(arrow);
   card.appendChild(name);
 
   if (site.description) {
@@ -555,15 +619,27 @@ closeSoonBtn.addEventListener("click", closeSoon);
 soonOverlay.addEventListener("click", e => { if (e.target === soonOverlay) closeSoon(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverlay.classList.contains("open")) closeSoon(); });
 
-/* ---------- Background: nebula glow, twinkling stars, shooting stars, wandering lines ---------- */
+/* ---------- Background: parallax starfield, constellations, aurora, comets, cursor glow ---------- */
 (function () {
   const canvas = document.getElementById("bg");
   const ctx = canvas.getContext("2d");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const rand = (a, b) => a + Math.random() * (b - a);
-  const TINTS = ["255,255,255", "255,255,255", "255,255,255", "190,210,255", "255,225,190"];
-  let W = 0, H = 0, lines = [], stars = [];
-  let shooter = null, nextShooter = rand(2, 5);
+  const TAU = Math.PI * 2;
+  const TINTS = ["255,255,255", "255,255,255", "190,210,255", "255,225,190", "205,185,255", "165,240,255"];
+  const LINK_DIST = 110;    // how close stars must be to connect into constellations
+  const MOUSE_DIST = 180;   // how far the cursor "web" reaches
+
+  let W = 0, H = 0;
+  let stars = [], linked = [], lines = [], comets = [], ripples = [], sparks = [];
+  let nextComet = rand(3, 6);
+  const mouse = { x: 0, y: 0, sx: 0, sy: 0, active: false, px: 0, py: 0 };
+
+  /* Slow, drifting aurora ribbons */
+  const AURORAS = [
+    { hue: 235, y: 0.30, amp: 55, thick: 190, f: 0.0038, sp: 0.25,  ph: 0.0, a: 0.04 },
+    { hue: 185, y: 0.65, amp: 60, thick: 190, f: 0.0033, sp: -0.20, ph: 3.0, a: 0.035 }
+  ];
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -573,113 +649,155 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     canvas.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const lineCount = Math.max(8, Math.min(24, Math.round(W / 80)));
+    const lineCount = Math.max(6, Math.min(18, Math.round(W / 100)));
     while (lines.length < lineCount) lines.push(newLine(true));
     lines.length = lineCount;
 
-    const starCount = Math.max(90, Math.min(320, Math.round(W * H / 7000)));
+    const starCount = Math.max(110, Math.min(380, Math.round(W * H / 6500)));
     while (stars.length < starCount) stars.push(newStar());
     stars.length = starCount;
+    linked = stars.filter(s => s.z > 0.5).slice(0, 130);
 
-    if (reduceMotion) drawStars(0, true);
+    if (reduceMotion) render(0, true);
   }
 
-  /* ---- stars (positions are 0..1 so they survive resizing) ---- */
+  /* ---- stars: z = depth (bigger = closer = faster drift + stronger parallax) ---- */
   function newStar() {
-    const r = Math.pow(Math.random(), 2.2) * 1.5 + 0.4; // mostly tiny, a few bigger
+    const z = 0.15 + Math.pow(Math.random(), 1.6) * 0.85;
     return {
-      x: Math.random(), y: Math.random(),
-      r: r,
-      drift: r * rand(1.5, 4),            // bigger = closer = drifts faster (px/sec)
-      phase: rand(0, 6.28), tw: rand(0.5, 2.2),
-      base: rand(0.35, 0.95),
-      c: TINTS[Math.floor(Math.random() * TINTS.length)]
+      x: Math.random(), y: Math.random(), z: z,
+      r: 0.35 + z * 1.35,
+      drift: z * rand(3, 9),
+      phase: rand(0, TAU), tw: rand(0.5, 2.4),
+      base: rand(0.4, 0.95),
+      c: TINTS[(Math.random() * TINTS.length) | 0],
+      sx: 0, sy: 0
     };
+  }
+
+  function place(s) {
+    s.sx = (((s.x * W + mouse.px * s.z * 14) % W) + W) % W;
+    s.sy = (((s.y * H + mouse.py * s.z * 9) % H) + H) % H;
   }
 
   function drawStars(t, still) {
     for (const s of stars) {
-      const a = still ? s.base * 0.8 : s.base * (0.55 + 0.45 * Math.sin(t * s.tw + s.phase));
+      let a = still ? s.base * 0.8 : s.base * (0.55 + 0.45 * Math.sin(t * s.tw + s.phase));
       ctx.fillStyle = "rgba(" + s.c + "," + a.toFixed(2) + ")";
-      const x = s.x * W, y = s.y * H;
       if (s.r < 1) {
-        ctx.fillRect(x, y, s.r * 1.4, s.r * 1.4);
+        ctx.fillRect(s.sx, s.sy, s.r * 1.4, s.r * 1.4);
       } else {
         ctx.beginPath();
-        ctx.arc(x, y, s.r * 0.8, 0, 6.2832);
+        ctx.arc(s.sx, s.sy, s.r * 0.8, 0, TAU);
         ctx.fill();
+        if (s.r > 1.4) {   // soft halo on the biggest stars
+          ctx.fillStyle = "rgba(" + s.c + "," + (a * 0.12).toFixed(3) + ")";
+          ctx.beginPath();
+          ctx.arc(s.sx, s.sy, s.r * 3.2, 0, TAU);
+          ctx.fill();
+        }
       }
     }
   }
 
-  function moveStars(dt) {
-    for (const s of stars) {
-      s.y += s.drift * dt / H;
-      if (s.y > 1) { s.y = 0; s.x = Math.random(); }
+  /* ---- constellations (stars close together connect) + cursor web ---- */
+  function drawLinks() {
+    ctx.lineWidth = 0.7;
+    for (let i = 0; i < linked.length; i++) {
+      const a = linked[i];
+      for (let j = i + 1; j < linked.length; j++) {
+        const b = linked[j];
+        const dx = a.sx - b.sx, dy = a.sy - b.sy;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < LINK_DIST * LINK_DIST) {
+          const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.11;
+          ctx.strokeStyle = "rgba(170,195,255," + alpha.toFixed(3) + ")";
+          ctx.beginPath();
+          ctx.moveTo(a.sx, a.sy);
+          ctx.lineTo(b.sx, b.sy);
+          ctx.stroke();
+        }
+      }
     }
   }
 
-  /* ---- shooting stars ---- */
-  function spawnShooter() {
+  /* ---- aurora ribbons ---- */
+  function drawAurora(t) {
+    ctx.globalCompositeOperation = "lighter";
+    const step = 28;
+    for (const b of AURORAS) {
+      const base = b.y * H;
+      const hue = b.hue + Math.sin(t * 0.1 + b.ph) * 22;
+      const g = ctx.createLinearGradient(0, base - b.amp, 0, base + b.thick + b.amp);
+      g.addColorStop(0, "hsla(" + hue + ",90%,60%,0)");
+      g.addColorStop(0.45, "hsla(" + hue + ",90%,62%," + b.a + ")");
+      g.addColorStop(1, "hsla(" + hue + ",90%,60%,0)");
+      ctx.fillStyle = g;
+      const wave = x => base
+        + Math.sin(x * b.f + t * b.sp + b.ph) * b.amp
+        + Math.sin(x * b.f * 2.3 - t * b.sp * 1.7) * b.amp * 0.35;
+      ctx.beginPath();
+      ctx.moveTo(0, wave(0));
+      for (let x = step; x <= W + step; x += step) ctx.lineTo(x, wave(x));
+      for (let x = W + step; x >= 0; x -= step) ctx.lineTo(x, wave(x) + b.thick);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  /* ---- glowing comets (several can fly at once) ---- */
+  const COMET_HUES = [200, 280, 170, 320];
+  function spawnComet() {
     const dir = Math.random() < 0.5 ? 1 : -1;
-    const ang = rand(0.4, 0.8);
-    const spd = rand(700, 1100);
+    const ang = rand(0.35, 0.85);
+    const spd = rand(650, 1200);
     return {
-      x: dir === 1 ? rand(0, W * 0.6) : rand(W * 0.4, W),
-      y: rand(-20, H * 0.35),
+      x: dir === 1 ? rand(-50, W * 0.6) : rand(W * 0.4, W + 50),
+      y: rand(-30, H * 0.4),
       vx: Math.cos(ang) * spd * dir, vy: Math.sin(ang) * spd,
-      spd: spd, len: rand(120, 230),
-      life: 0, max: rand(0.7, 1.2)
+      spd: spd, len: rand(140, 280),
+      life: 0, max: rand(0.8, 1.4),
+      hue: COMET_HUES[(Math.random() * COMET_HUES.length) | 0]
     };
   }
 
-  function stepShooter(dt) {
-    if (!shooter) {
-      nextShooter -= dt;
-      if (nextShooter <= 0) shooter = spawnShooter();
-      return;
-    }
-    shooter.x += shooter.vx * dt;
-    shooter.y += shooter.vy * dt;
-    shooter.life += dt;
-    if (shooter.life >= shooter.max) { shooter = null; nextShooter = rand(4, 10); }
-  }
-
-  function drawShooter() {
-    if (!shooter) return;
-    const s = shooter;
-    const a = Math.sin(Math.PI * Math.min(s.life / s.max, 1));
-    const tx = s.x - (s.vx / s.spd) * s.len;
-    const ty = s.y - (s.vy / s.spd) * s.len;
-    const g = ctx.createLinearGradient(tx, ty, s.x, s.y);
-    g.addColorStop(0, "rgba(180,205,255,0)");
-    g.addColorStop(1, "rgba(255,255,255," + (0.9 * a).toFixed(2) + ")");
+  function drawComet(c) {
+    const a = Math.sin(Math.PI * Math.min(c.life / c.max, 1));
+    const tx = c.x - (c.vx / c.spd) * c.len;
+    const ty = c.y - (c.vy / c.spd) * c.len;
+    const g = ctx.createLinearGradient(tx, ty, c.x, c.y);
+    g.addColorStop(0, "hsla(" + c.hue + ",100%,80%,0)");
+    g.addColorStop(1, "hsla(" + c.hue + ",100%,88%," + (0.9 * a).toFixed(2) + ")");
     ctx.strokeStyle = g;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.8;
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(tx, ty);
-    ctx.lineTo(s.x, s.y);
+    ctx.lineTo(c.x, c.y);
     ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255," + a.toFixed(2) + ")";
-    ctx.beginPath();
-    ctx.arc(s.x, s.y, 1.6, 0, 6.2832);
-    ctx.fill();
+    const h = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, 10);
+    h.addColorStop(0, "rgba(255,255,255," + a.toFixed(2) + ")");
+    h.addColorStop(0.4, "hsla(" + c.hue + ",100%,80%," + (0.5 * a).toFixed(2) + ")");
+    h.addColorStop(1, "hsla(" + c.hue + ",100%,70%,0)");
+    ctx.fillStyle = h;
+    ctx.fillRect(c.x - 10, c.y - 10, 20, 20);
   }
 
-  /* ---- wandering lines ---- */
+  /* ---- wandering colored lines ---- */
   function newLine(firstTime) {
     return {
       x: rand(0, W),
       y: -10,
       t: rand(0, 100),
-      speed: rand(70, 170),            // pixels per second
-      trail: Math.floor(rand(100, 260)), // how long the line is
+      speed: rand(70, 170),
+      trail: Math.floor(rand(100, 260)),
       a1: rand(0.25, 0.7), f1: rand(0.25, 0.8), p1: rand(0, 6.28),
       a2: rand(0.1, 0.35), f2: rand(0.8, 1.8), p2: rand(0, 6.28),
       width: rand(0.8, 1.6),
-      alpha: rand(0.3, 0.7),
-      wait: firstTime ? rand(0, 4) : rand(0.2, 3), // seconds before it starts
+      alpha: rand(0.2, 0.45),
+      hue: rand(200, 260),
+      wait: firstTime ? rand(0, 4) : rand(0.2, 3),
       pts: []
     };
   }
@@ -689,14 +807,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     const offscreen = l.y > H + 20;
     if (!offscreen) {
       l.t += dt;
-      // Smooth wandering, always heading downward
       const ang = Math.PI / 2 + l.a1 * Math.sin(l.t * l.f1 + l.p1) + l.a2 * Math.sin(l.t * l.f2 + l.p2);
       l.x += Math.cos(ang) * l.speed * dt;
       l.y += Math.sin(ang) * l.speed * dt;
       l.pts.push(l.x, l.y);
       if (l.pts.length > l.trail * 2) l.pts.splice(0, 2);
     } else {
-      l.pts.splice(0, 2); // head is gone, let the tail slide off
+      l.pts.splice(0, 2);
       if (l.pts.length < 4) Object.assign(l, newLine(false), { x: rand(0, W) });
     }
   }
@@ -708,7 +825,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     ctx.lineCap = "round";
     for (let i = 1; i < n; i++) {
       const fade = Math.pow(i / n, 1.6) * l.alpha;
-      ctx.strokeStyle = "rgba(255,255,255," + fade.toFixed(3) + ")";
+      ctx.strokeStyle = "hsla(" + l.hue.toFixed(0) + ",40%,82%," + fade.toFixed(3) + ")";
       ctx.beginPath();
       ctx.moveTo(l.pts[(i - 1) * 2], l.pts[(i - 1) * 2 + 1]);
       ctx.lineTo(l.pts[i * 2], l.pts[i * 2 + 1]);
@@ -716,21 +833,110 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     }
   }
 
-  /* ---- main loop ---- */
+  /* ---- cursor glow, click ripples + sparks ---- */
+  function drawCursorGlow() {
+    if (!mouse.active) return;
+    const R = 240;
+    const g = ctx.createRadialGradient(mouse.sx, mouse.sy, 0, mouse.sx, mouse.sy, R);
+    g.addColorStop(0, "rgba(130,160,255,0.14)");
+    g.addColorStop(0.5, "rgba(150,110,255,0.05)");
+    g.addColorStop(1, "rgba(120,150,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(mouse.sx - R, mouse.sy - R, R * 2, R * 2);
+  }
+
+  function burst(x, y) {
+    if (ripples.length < 6) ripples.push({ x: x, y: y, r: 0 });
+    for (let i = 0; i < 12 && sparks.length < 120; i++) {
+      const ang = rand(0, TAU), spd = rand(80, 260);
+      sparks.push({
+        x: x, y: y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+        life: 0, max: rand(0.5, 1.0), hue: rand(190, 320)
+      });
+    }
+  }
+
+  function drawBursts() {
+    for (const r of ripples) {
+      const a = 1 - r.r / 280;
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(170,200,255," + (a * 0.55).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r, 0, TAU);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(200,170,255," + (a * 0.35).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.r * 0.6, 0, TAU);
+      ctx.stroke();
+    }
+    for (const p of sparks) {
+      const a = 1 - p.life / p.max;
+      ctx.fillStyle = "hsla(" + p.hue.toFixed(0) + ",100%,80%," + a.toFixed(2) + ")";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.6 * a + 0.4, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  window.addEventListener("pointermove", e => {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+    if (!mouse.active) { mouse.sx = mouse.x; mouse.sy = mouse.y; }
+    mouse.active = true;
+  }, { passive: true });
+  window.addEventListener("pointerup", e => { if (e.pointerType === "touch") mouse.active = false; }, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => { mouse.active = false; });
+
+  /* ---- update + render ---- */
+  function update(t, dt) {
+    // smooth cursor + parallax (gentle idle sway when no cursor)
+    const k = Math.min(1, dt * 10);
+    mouse.sx += (mouse.x - mouse.sx) * k;
+    mouse.sy += (mouse.y - mouse.sy) * k;
+    const tpx = mouse.active ? (mouse.x / W - 0.5) * 2 : Math.sin(t * 0.07) * 0.6;
+    const tpy = mouse.active ? (mouse.y / H - 0.5) * 2 : Math.cos(t * 0.05) * 0.4;
+    const pk = Math.min(1, dt * 2.5);
+    mouse.px += (tpx - mouse.px) * pk;
+    mouse.py += (tpy - mouse.py) * pk;
+
+    for (const s of stars) {
+      s.y += s.drift * dt / H;
+      if (s.y > 1) { s.y = 0; s.x = Math.random(); }
+    }
+
+    for (const l of lines) stepLine(l, dt);
+
+    nextComet -= dt;
+    if (nextComet <= 0 && comets.length < 1) { comets.push(spawnComet()); nextComet = rand(6, 12); }
+    for (const c of comets) { c.x += c.vx * dt; c.y += c.vy * dt; c.life += dt; }
+    comets = comets.filter(c => c.life < c.max);
+
+    for (const r of ripples) r.r += 420 * dt;
+    ripples = ripples.filter(r => r.r < 280);
+    const damp = Math.pow(0.04, dt);
+    for (const p of sparks) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= damp; p.vy = p.vy * damp + 60 * dt; p.life += dt; }
+    sparks = sparks.filter(p => p.life < p.max);
+  }
+
+  function render(t, still) {
+    ctx.clearRect(0, 0, W, H);
+    drawAurora(t);
+    for (const s of stars) place(s);
+    drawLinks();
+    drawStars(t, still);
+    if (still) return;
+    ctx.globalCompositeOperation = "lighter";
+    for (const l of lines) drawLine(l);
+    for (const c of comets) drawComet(c);
+    ctx.globalCompositeOperation = "source-over";
+  }
+
   let last = performance.now();
   function frame(now) {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
-    ctx.clearRect(0, 0, W, H);
-
-    moveStars(dt);
-    drawStars(now / 1000, false);
-
-    for (const l of lines) { stepLine(l, dt); drawLine(l); }
-
-    stepShooter(dt);
-    drawShooter();
-
+    const t = now / 1000;
+    update(t, dt);
+    render(t, false);
     requestAnimationFrame(frame);
   }
 
