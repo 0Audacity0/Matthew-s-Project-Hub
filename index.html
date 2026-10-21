@@ -309,6 +309,13 @@
   </div>
 </div>
 
+<div class="overlay" id="soonOverlay" role="dialog" aria-modal="true" aria-labelledby="soonText">
+  <div class="info-box">
+    <p id="soonText" style="text-align:center; font-size:17px; margin:0;"></p>
+    <button class="close-btn" id="closeSoon">Close</button>
+  </div>
+</div>
+
 <script>
 /* =====================================================================
   Stop lookin' through my code
@@ -367,7 +374,7 @@ const HOME_PROJECTS = [
   { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
   { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." },
   { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." },
-  { name: "Buckshot Roulette (But Bad)", url: "https://0audacity0.github.io/Buckshot-Roulette-but-bad/", description: " ", preview: "yes" }
+  { name: "Buckshot Roulette (But Bad)", url: "https://0audacity0.github.io/Buckshot-Roulette-but-bad/", description: " ", preview: "yes", releaseDate: "October 24th, 2026." }
 ];
 
 /* 4) The version number shown in the top left corner. */
@@ -497,6 +504,12 @@ function makeCard(site) {
     box.className = "preview-box";
     box.innerHTML = "<strong>\u26A0 Placeholder</strong><br>This project is a placeholder and has not been released yet.";
     card.appendChild(box);
+
+    // Placeholder projects don't open; they show the "be patient" popup instead
+    card.addEventListener("click", e => {
+      e.preventDefault();
+      openSoon(site.releaseDate);
+    });
   }
   return card;
 }
@@ -521,6 +534,26 @@ openBtn.addEventListener("click", openInfo);
 closeBtn.addEventListener("click", closeInfo);
 overlay.addEventListener("click", e => { if (e.target === overlay) closeInfo(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeInfo(); });
+
+/* "Coming soon" popup for placeholder projects */
+const soonOverlay = document.getElementById("soonOverlay");
+const soonText = document.getElementById("soonText");
+const closeSoonBtn = document.getElementById("closeSoon");
+let soonOpener = null;
+
+function openSoon(date) {
+  soonOpener = document.activeElement;
+  soonText.textContent = "This will be released on " + (date || "a date to be announced") + ", so please be patient";
+  soonOverlay.classList.add("open");
+  closeSoonBtn.focus();
+}
+function closeSoon() {
+  soonOverlay.classList.remove("open");
+  if (soonOpener && soonOpener.focus) soonOpener.focus();
+}
+closeSoonBtn.addEventListener("click", closeSoon);
+soonOverlay.addEventListener("click", e => { if (e.target === soonOverlay) closeSoon(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverlay.classList.contains("open")) closeSoon(); });
 
 /* ---------- Background: nebula glow, twinkling stars, shooting stars, wandering lines ---------- */
 (function () {
