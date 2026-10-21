@@ -51,6 +51,7 @@
       radial-gradient(30% 28% at 72% 14%, rgba(168, 92, 225, 0.12), transparent 70%),
       radial-gradient(28% 26% at 28% 82%, rgba(60, 140, 255, 0.10), transparent 70%);
     animation: glowDrift 45s ease-in-out infinite alternate;
+    will-change: transform;
   }
   @keyframes glowDrift {
     from { transform: translate3d(-2%, -1.5%, 0) scale(1); }
@@ -63,6 +64,7 @@
     height: 100%;
     z-index: 0;
     pointer-events: none;
+    transform: translateZ(0);
   }
   main { position: relative; z-index: 1; }
 
@@ -150,9 +152,7 @@
     padding: 18px 20px 20px;
     border: 1px solid var(--line);
     border-radius: 16px;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.02));
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
+    background: linear-gradient(160deg, rgba(40, 42, 54, 0.78), rgba(14, 15, 22, 0.78));
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 10px 26px rgba(0, 0, 0, 0.3);
     color: inherit;
     text-decoration: none;
@@ -236,6 +236,18 @@
     border-radius: 8px;
   }
   .preview-box strong { color: #ff6b6b; font-weight: 700; }
+
+  .new-box {
+    margin-top: 12px;
+    padding: 9px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #9be8b0;
+    background: rgba(70, 220, 120, 0.12);
+    border: 1px solid rgba(80, 220, 130, 0.5);
+    border-radius: 8px;
+  }
+  .new-box strong { color: #5fe08a; font-weight: 700; }
 
   /* ---------- Dropdown (Home-made Projects) ---------- */
   .more-wrap { margin-top: -40px; padding-bottom: 20px; }
@@ -335,6 +347,245 @@
   }
   .close-btn:hover { background: rgba(255, 255, 255, 0.1); }
 
+  /* ---------- Codes button (bottom right, almost invisible) ---------- */
+  .codes-btn {
+    position: fixed;
+    bottom: 14px;
+    right: 16px;
+    z-index: 20;
+    font: inherit;
+    font-size: 12px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    cursor: pointer;
+    opacity: 0.05;
+    transition: opacity 0.3s;
+  }
+  .codes-btn:hover, .codes-btn:focus-visible { opacity: 0.5; }
+  .codes-btn:focus-visible { outline: 2px solid var(--accent); }
+
+  /* Codes panel: docked at the bottom of the screen, no blur */
+  .codes-panel {
+    position: fixed;
+    left: 50%;
+    bottom: 56px;
+    z-index: 25;
+    width: min(520px, calc(100% - 32px));
+    padding: 12px 14px 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    transform: translate(-50%, 20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s, transform 0.25s, visibility 0.25s;
+  }
+  .codes-panel.open { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+  .codes-panel form { display: flex; align-items: center; gap: 10px; }
+  .codes-label { font-weight: 700; font-size: 15px; }
+  .codes-panel .code-input { flex: 1; min-width: 0; width: auto; }
+  .enter-btn {
+    font: inherit;
+    font-weight: 500;
+    font-size: 15px;
+    color: #0b0d14;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+  .enter-btn:hover { filter: brightness(1.15); }
+  .enter-btn:focus-visible, .x-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .x-btn {
+    font: inherit;
+    font-size: 14px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+  }
+  .x-btn:hover { color: var(--ink); }
+  .codes-panel .code-msg { margin: 8px 0 0; }
+
+  .code-input {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 16px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 14px;
+    outline: none;
+  }
+  .code-input:focus { border-color: rgba(122, 162, 255, 0.6); }
+  .code-msg { min-height: 20px; margin: 12px 0 0; text-align: center; font-size: 14px; color: var(--muted); }
+  .code-msg.ok { color: #8be0a4; }
+  .code-msg.bad { color: #ff9a9a; }
+
+  /* Effects triggered by codes */
+  body.rainbow #glow, body.rainbow #bg {
+    filter: saturate(3) brightness(2.2);
+    animation: hueSpin 6s linear infinite;
+  }
+  body.rainbow #glow { animation: glowDrift 45s ease-in-out infinite alternate, hueSpin 6s linear infinite; }
+  body.rainbow .card, body.rainbow .section-rule { animation: hueSpin 6s linear infinite; }
+  @keyframes hueSpin {
+    from { filter: saturate(3) brightness(2.2) hue-rotate(0deg); }
+    to   { filter: saturate(3) brightness(2.2) hue-rotate(360deg); }
+  }
+  body.flip main { transform: rotate(180deg); }
+  main { transition: transform 0.8s; }
+
+  /* ---------- All Codes list (text box with close button) ---------- */
+  .codes-list {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 26;
+    width: min(440px, calc(100% - 32px));
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 22px 24px 20px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+    transform: translate(-50%, -46%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s, transform 0.25s, visibility 0.25s;
+  }
+  .codes-list.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%); }
+  .codes-list h2 { margin: 0 0 12px; text-align: center; font-size: 22px; font-weight: 700; }
+  .codes-list ul { margin: 0; padding: 0; list-style: none; }
+  .codes-list li { padding: 8px 0; border-top: 1px solid var(--line); color: #c9ccd6; font-size: 14px; line-height: 1.5; }
+  .codes-list li strong { color: var(--ink); }
+
+  /* ---------- Custom scrollbar (the slider on the side) ---------- */
+  @supports selector(::-webkit-scrollbar) {
+    /* slim, minimal, see-through pill that lights up blue on hover */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      border: 3px solid transparent;
+      border-radius: 999px;
+      background: rgba(236, 238, 242, 0.26) padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(122, 162, 255, 0.9) padding-box; }
+    ::-webkit-scrollbar-thumb:active { background: #7aa2ff padding-box; }
+    ::-webkit-scrollbar-corner { background: transparent; }
+    html:has(body.bearbones)::-webkit-scrollbar-track { background: repeating-linear-gradient(0deg, #ff0 0 6px, #f0f 6px 12px) !important; }
+    html:has(body.bearbones)::-webkit-scrollbar-thumb { background: #c0c0c0 !important; border: 3px outset #fff !important; border-radius: 0 !important; box-shadow: none !important; }
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    html, .info-box, .codes-list { scrollbar-width: thin; scrollbar-color: rgba(236, 238, 242, 0.3) transparent; }
+  }
+
+
+  /* ---------- More code effects ---------- */
+  #rain { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; display: none; }
+  #dark {
+    position: fixed; inset: 0; z-index: 15; pointer-events: none; display: none;
+    background: radial-gradient(circle 230px at var(--fx, 50%) var(--fy, 50%), transparent 0, rgba(0, 0, 0, 0.35) 55%, rgba(0, 0, 0, 0.97) 100%);
+  }
+  body.flashlight #dark { display: block; }
+
+  html.invert { filter: invert(1) hue-rotate(180deg); }
+
+  body.terminal { --ink: #33ff66; --muted: #1fae45; --line: rgba(51, 255, 102, 0.35); --accent: #33ff66; --panel: rgba(0, 14, 4, 0.96); }
+  body.terminal, body.terminal * { font-family: "Courier New", ui-monospace, monospace !important; }
+  body.terminal #glow, body.terminal #bg { filter: grayscale(1) sepia(1) hue-rotate(70deg) saturate(4); }
+  body.terminal .card { background: rgba(0, 30, 8, 0.55); }
+  body.terminal::after {
+    content: ""; position: fixed; inset: 0; z-index: 45; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
+  }
+
+  body.disco #glow { filter: saturate(3) brightness(2.4); animation: glowDrift 45s ease-in-out infinite alternate, hueSpin 1.4s linear infinite; }
+  body.disco .card { animation: discoPulse 0.55s ease-in-out infinite alternate; }
+  @keyframes discoPulse {
+    from { border-color: #ff2bd6; box-shadow: 0 0 12px #ff2bd6, inset 0 0 14px rgba(255, 43, 214, 0.35); transform: translateY(0); }
+    to   { border-color: #2bffe9; box-shadow: 0 0 28px #2bffe9, inset 0 0 14px rgba(43, 255, 233, 0.35); transform: translateY(-6px); }
+  }
+
+  body.coolbg #glow { filter: saturate(1.9) brightness(1.7); }
+  body.coolbg .card { border-color: rgba(160, 140, 255, 0.28); }
+
+  body.shake .card, body.shake .section-title { animation: shakeIt 0.8s ease-in-out; }
+  @keyframes shakeIt {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    10% { transform: translate(-9px, 4px) rotate(-1.5deg); }
+    25% { transform: translate(8px, -5px) rotate(1.5deg); }
+    40% { transform: translate(-7px, 6px) rotate(-1deg); }
+    55% { transform: translate(7px, -4px) rotate(1deg); }
+    70% { transform: translate(-4px, 3px) rotate(-0.5deg); }
+    85% { transform: translate(3px, -2px) rotate(0.5deg); }
+  }
+  body.spin .card { animation: spinOnce 1.3s cubic-bezier(0.5, 0, 0.2, 1); }
+  @keyframes spinOnce { from { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(0.8); } to { transform: rotate(360deg) scale(1); } }
+
+  /* ---------- BearBones: the ugly, cheap, scuffed look ---------- */
+  html:has(body.bearbones) { background: #ff00ff !important; }
+  body.bearbones {
+    background: repeating-linear-gradient(45deg, #ff00ff 0 12px, #00ffff 12px 24px) !important;
+    color: #000 !important;
+    cursor: crosshair;
+  }
+  body.bearbones *, body.bearbones *::before, body.bearbones *::after {
+    font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", cursive !important;
+    animation: none !important;
+    transition: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    text-shadow: 1px 1px 0 #ff0 !important;
+  }
+  body.bearbones #glow, body.bearbones #bg, body.bearbones .card::before, body.bearbones .card::after { display: none !important; }
+  body.bearbones .reveal { opacity: 1 !important; transform: none !important; }
+  body.bearbones main::before {
+    content: "*** UNDER CONSTRUCTION *** WELCOME TO MY HOMEPAGE!!! ***";
+    display: block;
+    margin-bottom: 24px;
+    padding: 6px;
+    background: #ffff00;
+    color: #ff0000;
+    border: 4px dashed #000;
+    font-weight: 700;
+    text-align: center;
+  }
+  body.bearbones h1.section-title { color: #ff0000 !important; text-decoration: underline wavy #0000ff; font-size: 34px !important; letter-spacing: 0 !important; }
+  body.bearbones .section-rule { height: 6px !important; background: repeating-linear-gradient(90deg, #000 0 8px, #ff0 8px 16px) !important; }
+  body.bearbones .version { color: #ff0000 !important; }
+  body.bearbones .card, body.bearbones .info-btn, body.bearbones .more-btn, body.bearbones .close-btn,
+  body.bearbones .enter-btn, body.bearbones .x-btn, body.bearbones .info-box, body.bearbones .codes-panel, body.bearbones .codes-list {
+    background: #c0c0c0 !important;
+    color: #000 !important;
+    border: 4px outset #ffffff !important;
+  }
+  body.bearbones .card:nth-child(odd) { transform: rotate(-1.5deg); }
+  body.bearbones .card:nth-child(even) { transform: rotate(1deg); }
+  body.bearbones .card:hover { transform: rotate(3deg) scale(1.03) !important; }
+  body.bearbones .card-title { color: #0000ee !important; text-decoration: underline; font-size: 18px !important; }
+  body.bearbones .card-desc, body.bearbones .info-box p, body.bearbones .codes-list li, body.bearbones .codes-list li strong { color: #000 !important; }
+  body.bearbones .card-arrow { color: #ff0000 !important; }
+  body.bearbones .code-input { background: #fff !important; color: #000 !important; border: 3px inset #888 !important; }
+  body.bearbones .codes-label, body.bearbones .codes-list h2, body.bearbones .info-box h2 { color: #000 !important; }
+  body.bearbones .code-msg { color: #000 !important; text-shadow: none !important; font-weight: 700; }
+  body.bearbones .code-msg.bad { color: #ff0000 !important; }
+  body.bearbones .warn { color: #000 !important; background: #ffff00 !important; border: 2px solid #000 !important; text-shadow: none !important; }
+  body.bearbones .preview-box, body.bearbones .new-box { color: #000 !important; background: #ffff00 !important; border: 2px solid #000 !important; text-shadow: none !important; }
+  body.bearbones .code-input::placeholder { color: #555; }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal { animation-duration: 0.01s; animation-delay: 0s; }
     .overlay, .info-box, .dropdown, .dropdown-inner, .more-btn .chev, .card, .card::before, .card::after, .card-arrow { transition: none; }
@@ -347,6 +598,8 @@
 
 <div id="glow" aria-hidden="true"></div>
 <canvas id="bg" aria-hidden="true"></canvas>
+<canvas id="rain" aria-hidden="true"></canvas>
+<div id="dark" aria-hidden="true"></div>
 
 <div class="version reveal" id="version" style="--i:0"></div>
 
@@ -360,6 +613,24 @@
     <div id="infoText"></div>
     <button class="close-btn" id="closeInfo">Close</button>
   </div>
+</div>
+
+<button class="codes-btn" id="openCodes" aria-haspopup="dialog" aria-label="Codes">Codes</button>
+
+<div class="codes-panel" id="codesOverlay" role="dialog" aria-labelledby="codesTitle">
+  <form id="codesForm" autocomplete="off">
+    <span class="codes-label" id="codesTitle">Codes</span>
+    <input class="code-input" id="codeInput" type="text" placeholder="Enter a code" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-label="Code">
+    <button class="enter-btn" type="submit">Enter</button>
+    <button class="x-btn" type="button" id="closeCodes" aria-label="Close codes">&#10005;</button>
+  </form>
+  <p class="code-msg" id="codeMsg" role="status"></p>
+</div>
+
+<div class="codes-list" id="codesList" role="dialog" aria-labelledby="codesListTitle">
+  <h2 id="codesListTitle">All Codes</h2>
+  <ul id="codesListBody"></ul>
+  <button class="close-btn" type="button" id="closeCodesList">Close</button>
 </div>
 
 <div class="overlay" id="soonOverlay" role="dialog" aria-modal="true" aria-labelledby="soonText">
@@ -403,6 +674,10 @@ const INFO_TEXT = [
                      a red box inside it saying it's a placeholder and not released
                      yet. (preview: true works too.) Leave it out for released ones.
 
+        new:         OPTIONAL. Put  new: "yes"  at the end of a project to show a
+                     green box inside it saying it was just released. (new: true
+                     works too.) Leave it out once it's no longer new.
+
       Examples:
       { name: "My Site", url: "https://...", description: "...", mobile: false },
       { name: "My Site", url: "https://...", description: "...", mobile: "tablet" },   */
@@ -425,18 +700,120 @@ const PROJECTS = {
 /* 3) Your Home-made Projects (shows when you click the dropdown button
       under "Older Projects"). Same format as above. */
 const HOME_PROJECTS = [
+  { name: "Buckshot Roulette But Bad (Or better?)", url: "https://0audacity0.github.io/Be-Patient-Yo/", description: " ", preview: "yes", releaseDate: "October 24th, 2026" },
   { name: "Gamble Project", url: "https://0audacity0.github.io/Gamble-Project/", description: "LITERALLY just gambling with no life demolishing effects, everything is fake." },
   { name: "Voxel Project", url: "https://0audacity0.github.io/Voxel-Project/", description: "Almost like the game 'The Powder Toy' but with half the stuff inside it." },
-  { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." },
-  { name: "Buckshot Roulette But Bad (Or better?)", url: "https://0audacity0.github.io/Be-Patient-Yo/", description: " ", preview: "yes", releaseDate: "October 24th, 2026" }
+  { name: "Plane Dodge", url: "https://0audacity0.github.io/PaperAirplaneDodge/", description: "Fly a plane, get crystals, crash 3 times and you're out. Pretty basic if you ask me." }
 ];
 
+/* 3.5) Secret codes. Type one into the "Codes" box (bottom right corner).
+        Codes are NOT case sensitive. To add one, copy a line and change the
+        name + what it does. Each one is a function that runs when entered.
+        It should return a short message to show (or nothing).
+        Available helpers: BG.comets(n), BG.burst(x, y), BG.stars(n)
+        Format:  "lowercasename": { name: "ShownName", desc: "what it does", run: () => { ...; return "message"; } }, */
+const CODES = {
+  "showcodesall": {
+    name: "ShowCodesAll", desc: "Shows this list of every code.",
+    run: () => { openCodesList(); return "Done"; }
+  },
+  "bearbones": {
+    name: "BearBones", desc: "Makes the page look horrible, cheap and scuffed. Type it again to undo.",
+    run: () => { const on = document.body.classList.toggle("bearbones"); return on ? "On" : "Off"; }
+  },
+  "matrix": {
+    name: "Matrix", desc: "Green digital rain falls over the page. Type it again to stop.",
+    run: () => RAIN.toggle() ? "On" : "Off"
+  },
+  "terminal": {
+    name: "Terminal", desc: "Hacker mode: green text, monospace font and scanlines. Type it again to undo.",
+    run: () => document.body.classList.toggle("terminal") ? "On" : "Off"
+  },
+  "disco": {
+    name: "Disco", desc: "Flashing neon cards and a strobing background. Type it again to stop.",
+    run: () => document.body.classList.toggle("disco") ? "On" : "Off"
+  },
+  "flashlight": {
+    name: "Flashlight", desc: "The page goes dark and your cursor becomes a flashlight. Type it again to turn the lights on.",
+    run: () => document.body.classList.toggle("flashlight") ? "On" : "Off"
+  },
+  "invert": {
+    name: "Invert", desc: "Flips the page to a bright inverted look. Type it again to undo.",
+    run: () => document.documentElement.classList.toggle("invert") ? "On" : "Off"
+  },
+  "warp": {
+    name: "Warp", desc: "The stars stretch into streaks like you're jumping to lightspeed.",
+    run: () => { BG.warp(); return "Done"; }
+  },
+  "fireworks": {
+    name: "Fireworks", desc: "Big firework bursts explode across the screen.",
+    run: () => {
+      for (let i = 0; i < 10; i++) setTimeout(() => BG.burst(innerWidth * (0.1 + Math.random() * 0.8), innerHeight * (0.1 + Math.random() * 0.6), 56), i * 260);
+      return "Done";
+    }
+  },
+  "shake": {
+    name: "Shake", desc: "Earthquake! The cards and titles shake.",
+    run: () => { document.body.classList.add("shake"); setTimeout(() => document.body.classList.remove("shake"), 900); return "Done"; }
+  },
+  "spin": {
+    name: "Spin", desc: "Every card does a full spin.",
+    run: () => { document.body.classList.add("spin"); setTimeout(() => document.body.classList.remove("spin"), 1400); return "Done"; }
+  },
+  "coolerbg": {
+    name: "CoolerBG", desc: "Turns the background into a vivid, living cosmos: glowing nebulas, bright aurora, shooting stars and a sparkle trail behind your cursor. Type it again to turn it off.",
+    run: () => {
+      const on = document.body.classList.toggle("coolbg");
+      BG.cool(on);
+      return on ? "On" : "Off";
+    }
+  },
+  "comets": {
+    name: "Comets", desc: "A bunch of comets fly across the screen.",
+    run: () => { BG.comets(14); return "Done"; }
+  },
+  "confetti": {
+    name: "Confetti", desc: "Colorful spark bursts pop around the screen.",
+    run: () => {
+      for (let i = 0; i < 14; i++) setTimeout(() => BG.burst(Math.random() * innerWidth, Math.random() * innerHeight), i * 120);
+      return "Done";
+    }
+  },
+  "rainbow": {
+    name: "Rainbow", desc: "The background colors cycle. Type it again to turn it off.",
+    run: () => { const on = document.body.classList.toggle("rainbow"); return on ? "On" : "Off"; }
+  },
+  "flip": {
+    name: "Flip", desc: "Flips the page upside down. Type it again to flip back.",
+    run: () => { const on = document.body.classList.toggle("flip"); return on ? "On" : "Off"; }
+  },
+  "stars": {
+    name: "Stars", desc: "Adds more stars to the background.",
+    run: () => { BG.stars(250); return "Done"; }
+  },
+  "reset": {
+    name: "Reset", desc: "Undoes all of the effects.",
+    run: () => {
+      document.body.classList.remove("rainbow", "flip", "bearbones", "terminal", "disco", "flashlight", "shake", "spin", "coolbg");
+      document.documentElement.classList.remove("invert");
+      RAIN.stop(); BG.reset();
+      return "Done";
+    }
+  }
+};
+
 /* 4) The version number shown in the top left corner. */
-const VERSION = "v1.4.0";
+const VERSION = "v1.4.5";
 
 /* =====================================================================
    Do NOT touch anything below this
    ===================================================================== */
+
+/* Always start at the top on refresh */
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+window.scrollTo(0, 0);
+window.addEventListener("pageshow", () => window.scrollTo(0, 0));
+window.addEventListener("load", () => window.scrollTo(0, 0));
 
 document.getElementById("version").textContent = VERSION;
 
@@ -575,6 +952,13 @@ function makeCard(site) {
       openSoon(site.releaseDate);
     });
   }
+  if (!(site.preview === true || String(site.preview).toLowerCase() === "yes") &&
+      (site.new === true || String(site.new).toLowerCase() === "yes")) {
+    const nbox = document.createElement("div");
+    nbox.className = "new-box";
+    nbox.innerHTML = "<strong> New</strong><br>This " + (site.newType || "project/game") + " was just released, so you can look at it now.";
+    card.appendChild(nbox);
+  }
   return card;
 }
 
@@ -599,6 +983,58 @@ closeBtn.addEventListener("click", closeInfo);
 overlay.addEventListener("click", e => { if (e.target === overlay) closeInfo(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) closeInfo(); });
 
+/* Codes popup */
+const codesOverlay = document.getElementById("codesOverlay");
+const codeInput = document.getElementById("codeInput");
+const codeMsg = document.getElementById("codeMsg");
+const openCodesBtn = document.getElementById("openCodes");
+
+function openCodes()  { if (codesOverlay.classList.contains("open")) { closeCodes(); return; } codesOverlay.classList.add("open"); codeMsg.textContent = ""; codeMsg.className = "code-msg"; codeInput.value = ""; setTimeout(() => codeInput.focus(), 50); }
+function closeCodes(noFocus) { codesOverlay.classList.remove("open"); if (noFocus !== true) openCodesBtn.focus(); }
+
+/* All Codes list */
+const codesList = document.getElementById("codesList");
+const codesListBody = document.getElementById("codesListBody");
+const closeCodesListBtn = document.getElementById("closeCodesList");
+function openCodesList() {
+  codesListBody.textContent = "";
+  Object.values(CODES).forEach(c => {
+    const li = document.createElement("li");
+    const b = document.createElement("strong");
+    b.textContent = c.name;
+    li.appendChild(b);
+    li.appendChild(document.createTextNode(" — " + c.desc));
+    codesListBody.appendChild(li);
+  });
+  codesList.classList.add("open");
+  closeCodesListBtn.focus();
+}
+function closeCodesList() { codesList.classList.remove("open"); }
+closeCodesListBtn.addEventListener("click", closeCodesList);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && codesList.classList.contains("open")) closeCodesList(); });
+
+openCodesBtn.addEventListener("click", openCodes);
+document.getElementById("closeCodes").addEventListener("click", closeCodes);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && codesOverlay.classList.contains("open")) closeCodes(); });
+
+document.getElementById("codesForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const typed = codeInput.value.trim();
+  // ignore capitals, spaces and punctuation (keyboards love to autocorrect "bearbones" -> "Bear bones")
+  const key = typed.toLowerCase().replace(/[^a-z0-9]/g, "");
+  codeInput.value = "";
+  if (Object.prototype.hasOwnProperty.call(CODES, key)) {
+    const msg = CODES[key].run();
+    codeMsg.textContent = msg || "Code accepted!";
+    codeMsg.className = "code-msg ok";
+  } else {
+    codeMsg.textContent = typed ? "“" + typed + "” is not a valid code." : "Type a code first.";
+    codeMsg.className = "code-msg bad";
+  }
+  codeInput.focus();   // panel stays open so you can keep entering codes
+});
+codeInput.addEventListener("input", () => { codeMsg.textContent = ""; codeMsg.className = "code-msg"; });
+
 /* "Coming soon" popup for placeholder projects */
 const soonOverlay = document.getElementById("soonOverlay");
 const soonText = document.getElementById("soonText");
@@ -619,6 +1055,50 @@ closeSoonBtn.addEventListener("click", closeSoon);
 soonOverlay.addEventListener("click", e => { if (e.target === soonOverlay) closeSoon(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverlay.classList.contains("open")) closeSoon(); });
 
+/* Flashlight follows the cursor / finger */
+window.addEventListener("pointermove", e => {
+  document.documentElement.style.setProperty("--fx", e.clientX + "px");
+  document.documentElement.style.setProperty("--fy", e.clientY + "px");
+}, { passive: true });
+
+/* Matrix rain (used by the "matrix" code) */
+const RAIN = (function () {
+  const c = document.getElementById("rain");
+  const x = c.getContext("2d");
+  const FS = 17;
+  const CH = "アイウエオカキクケコサシスセソ0123456789ABCDEFZ";
+  let on = false, drops = [], raf = 0, last = 0;
+  function size() {
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    drops = Array.from({ length: Math.ceil(c.width / FS) }, () => -Math.random() * 40);
+  }
+  function draw(now) {
+    if (!on) return;
+    raf = requestAnimationFrame(draw);
+    if (now - last < 55) return;
+    last = now;
+    x.globalCompositeOperation = "destination-out";
+    x.fillStyle = "rgba(0,0,0,0.14)";
+    x.fillRect(0, 0, c.width, c.height);
+    x.globalCompositeOperation = "source-over";
+    x.font = FS + "px monospace";
+    for (let i = 0; i < drops.length; i++) {
+      const ch = CH[(Math.random() * CH.length) | 0];
+      const px = i * FS, py = drops[i] * FS;
+      x.fillStyle = "#d6ffe2";
+      x.fillText(ch, px, py);
+      x.fillStyle = "rgba(40,255,110,0.9)";
+      x.fillText(CH[(Math.random() * CH.length) | 0], px, py - FS);
+      if (py > c.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  function start() { size(); x.clearRect(0, 0, c.width, c.height); c.style.display = "block"; on = true; cancelAnimationFrame(raf); raf = requestAnimationFrame(draw); }
+  function stop() { on = false; cancelAnimationFrame(raf); c.style.display = "none"; }
+  window.addEventListener("resize", () => { if (on) size(); });
+  return { toggle: () => { on ? stop() : start(); return on; }, stop: stop };
+})();
+
 /* ---------- Background: parallax starfield, constellations, aurora, comets, cursor glow ---------- */
 (function () {
   const canvas = document.getElementById("bg");
@@ -633,6 +1113,8 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
   let W = 0, H = 0;
   let stars = [], linked = [], lines = [], comets = [], ripples = [], sparks = [];
   let nextComet = rand(3, 6);
+  let boost = 1, boostTarget = 1;   // used by the "warp" code
+  let cool = false, coolT = 0;      // used by the "coolerbg" code
   const mouse = { x: 0, y: 0, sx: 0, sy: 0, active: false, px: 0, py: 0 };
 
   /* Slow, drifting aurora ribbons */
@@ -641,8 +1123,40 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     { hue: 185, y: 0.65, amp: 60, thick: 190, f: 0.0033, sp: -0.20, ph: 3.0, a: 0.035 }
   ];
 
+  /* CoolerBG: big drifting nebula clouds + brighter, hue-shifting aurora */
+  const NEBULAE = [
+    { x: 0.18, y: 0.28, r: 0.58, h: 280, sp: 0.09, ph: 0.0 },
+    { x: 0.82, y: 0.22, r: 0.52, h: 190, sp: 0.07, ph: 1.7 },
+    { x: 0.55, y: 0.82, r: 0.62, h: 320, sp: 0.06, ph: 3.1 },
+    { x: 0.12, y: 0.86, r: 0.46, h: 215, sp: 0.10, ph: 4.4 },
+    { x: 0.88, y: 0.72, r: 0.50, h: 175, sp: 0.08, ph: 5.6 }
+  ];
+  const AURORAS_COOL = [
+    { hue: 175, y: 0.22, amp: 70, thick: 230, f: 0.0036, sp: 0.35,  ph: 0.0, a: 0.13 },
+    { hue: 280, y: 0.46, amp: 80, thick: 250, f: 0.0030, sp: -0.28, ph: 2.0, a: 0.12 },
+    { hue: 200, y: 0.68, amp: 75, thick: 240, f: 0.0034, sp: 0.30,  ph: 4.0, a: 0.12 },
+    { hue: 330, y: 0.86, amp: 60, thick: 200, f: 0.0040, sp: -0.38, ph: 5.5, a: 0.10 }
+  ];
+  function drawNebula(t) {
+    ctx.globalCompositeOperation = "lighter";
+    const M = Math.max(W, H);
+    for (const n of NEBULAE) {
+      const cx = (n.x + 0.10 * Math.sin(t * n.sp + n.ph)) * W;
+      const cy = (n.y + 0.08 * Math.cos(t * n.sp * 1.3 + n.ph)) * H;
+      const R = n.r * M * (1 + 0.07 * Math.sin(t * 0.3 + n.ph));
+      const hue = n.h + 32 * Math.sin(t * 0.22 + n.ph);
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      g.addColorStop(0, "hsla(" + hue.toFixed(0) + ",100%,62%,0.26)");
+      g.addColorStop(0.45, "hsla(" + ((hue + 40) % 360).toFixed(0) + ",100%,52%,0.11)");
+      g.addColorStop(1, "hsla(" + hue.toFixed(0) + ",100%,50%,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    }
+    ctx.globalCompositeOperation = "source-over";
+  }
+
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     W = window.innerWidth;
     H = window.innerHeight;
     canvas.width = W * dpr;
@@ -653,7 +1167,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     while (lines.length < lineCount) lines.push(newLine(true));
     lines.length = lineCount;
 
-    const starCount = Math.max(110, Math.min(380, Math.round(W * H / 6500)));
+    const starCount = Math.max(110, Math.min(380, Math.round(W * H / 6500))) + (cool ? 170 : 0);
     while (stars.length < starCount) stars.push(newStar());
     stars.length = starCount;
     linked = stars.filter(s => s.z > 0.5).slice(0, 130);
@@ -683,6 +1197,31 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
   function drawStars(t, still) {
     for (const s of stars) {
       let a = still ? s.base * 0.8 : s.base * (0.55 + 0.45 * Math.sin(t * s.tw + s.phase));
+      if (cool && s.r > 0.9) {   // vivid glow + sparkle on the brighter stars
+        const hue = 190 + ((s.phase * 57) % 150);
+        const gr = s.r * (6 + 2.5 * Math.sin(t * s.tw + s.phase));
+        const sg = ctx.createRadialGradient(s.sx, s.sy, 0, s.sx, s.sy, gr);
+        sg.addColorStop(0, "hsla(" + hue.toFixed(0) + ",100%,75%," + (a * 0.55).toFixed(2) + ")");
+        sg.addColorStop(1, "hsla(" + hue.toFixed(0) + ",100%,65%,0)");
+        ctx.fillStyle = sg;
+        ctx.fillRect(s.sx - gr, s.sy - gr, gr * 2, gr * 2);
+        if (s.r > 1.35) {
+          ctx.strokeStyle = "rgba(255,255,255," + (a * 0.6).toFixed(2) + ")";
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(s.sx - gr * 1.5, s.sy); ctx.lineTo(s.sx + gr * 1.5, s.sy);
+          ctx.moveTo(s.sx, s.sy - gr * 1.5); ctx.lineTo(s.sx, s.sy + gr * 1.5);
+          ctx.stroke();
+        }
+      }
+      if (boost > 3) {   // warp streaks
+        ctx.strokeStyle = "rgba(" + s.c + "," + Math.min(0.9, a * 0.7).toFixed(2) + ")";
+        ctx.lineWidth = Math.max(0.8, s.r * 0.9);
+        ctx.beginPath();
+        ctx.moveTo(s.sx, s.sy);
+        ctx.lineTo(s.sx, s.sy - s.drift * boost * 0.07 - 2);
+        ctx.stroke();
+      }
       ctx.fillStyle = "rgba(" + s.c + "," + a.toFixed(2) + ")";
       if (s.r < 1) {
         ctx.fillRect(s.sx, s.sy, s.r * 1.4, s.r * 1.4);
@@ -722,12 +1261,12 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
   }
 
   /* ---- aurora ribbons ---- */
-  function drawAurora(t) {
+  function drawAurora(t, list) {
     ctx.globalCompositeOperation = "lighter";
     const step = 28;
-    for (const b of AURORAS) {
+    for (const b of list || AURORAS) {
       const base = b.y * H;
-      const hue = b.hue + Math.sin(t * 0.1 + b.ph) * 22;
+      const hue = b.hue + Math.sin(t * 0.1 + b.ph) * 22 + (cool ? 28 * Math.sin(t * 0.2 + b.ph) : 0);
       const g = ctx.createLinearGradient(0, base - b.amp, 0, base + b.thick + b.amp);
       g.addColorStop(0, "hsla(" + hue + ",90%,60%,0)");
       g.addColorStop(0.45, "hsla(" + hue + ",90%,62%," + b.a + ")");
@@ -823,12 +1362,16 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     if (n < 2) return;
     ctx.lineWidth = l.width;
     ctx.lineCap = "round";
-    for (let i = 1; i < n; i++) {
-      const fade = Math.pow(i / n, 1.6) * l.alpha;
-      ctx.strokeStyle = "hsla(" + l.hue.toFixed(0) + ",40%,82%," + fade.toFixed(3) + ")";
+    const CH = 12;   // segments per stroke (keeps the fade, far fewer draw calls)
+    for (let i = 1; i < n; i += CH) {
+      const end = Math.min(i + CH, n - 1);
+      const fade = Math.pow(((i + end) / 2) / n, 1.6) * l.alpha * (cool ? 2.2 : 1);
+      ctx.strokeStyle = cool
+        ? "hsla(" + (l.hue + 50 * Math.sin(coolT * 0.4 + l.p1)).toFixed(0) + ",100%,72%," + Math.min(1, fade).toFixed(3) + ")"
+        : "hsla(" + l.hue.toFixed(0) + ",40%,82%," + fade.toFixed(3) + ")";
       ctx.beginPath();
       ctx.moveTo(l.pts[(i - 1) * 2], l.pts[(i - 1) * 2 + 1]);
-      ctx.lineTo(l.pts[i * 2], l.pts[i * 2 + 1]);
+      for (let k = i; k <= end; k++) ctx.lineTo(l.pts[k * 2], l.pts[k * 2 + 1]);
       ctx.stroke();
     }
   }
@@ -845,9 +1388,10 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     ctx.fillRect(mouse.sx - R, mouse.sy - R, R * 2, R * 2);
   }
 
-  function burst(x, y) {
-    if (ripples.length < 6) ripples.push({ x: x, y: y, r: 0 });
-    for (let i = 0; i < 12 && sparks.length < 120; i++) {
+  function burst(x, y, n) {
+    n = n || 12;
+    if (ripples.length < 14) ripples.push({ x: x, y: y, r: 0 });
+    for (let i = 0; i < n && sparks.length < 700; i++) {
       const ang = rand(0, TAU), spd = rand(80, 260);
       sparks.push({
         x: x, y: y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
@@ -880,6 +1424,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
 
   window.addEventListener("pointermove", e => {
     mouse.x = e.clientX; mouse.y = e.clientY;
+    if (cool && sparks.length < 600) {
+      for (let i = 0; i < 2; i++) {
+        const ang = rand(0, TAU), spd = rand(15, 70);
+        sparks.push({ x: mouse.x, y: mouse.y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
+                      life: 0, max: rand(0.5, 1.1), hue: 190 + ((coolT * 40) % 150) });
+      }
+    }
     if (!mouse.active) { mouse.sx = mouse.x; mouse.sy = mouse.y; }
     mouse.active = true;
   }, { passive: true });
@@ -898,15 +1449,16 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     mouse.px += (tpx - mouse.px) * pk;
     mouse.py += (tpy - mouse.py) * pk;
 
+    boost += (boostTarget - boost) * Math.min(1, dt * 3);
     for (const s of stars) {
-      s.y += s.drift * dt / H;
+      s.y += s.drift * boost * dt / H;
       if (s.y > 1) { s.y = 0; s.x = Math.random(); }
     }
 
     for (const l of lines) stepLine(l, dt);
 
     nextComet -= dt;
-    if (nextComet <= 0 && comets.length < 1) { comets.push(spawnComet()); nextComet = rand(6, 12); }
+    if (nextComet <= 0 && comets.length < (cool ? 4 : 1)) { comets.push(spawnComet()); nextComet = cool ? rand(0.7, 2) : rand(6, 12); }
     for (const c of comets) { c.x += c.vx * dt; c.y += c.vy * dt; c.life += dt; }
     comets = comets.filter(c => c.life < c.max);
 
@@ -918,8 +1470,10 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
   }
 
   function render(t, still) {
+    coolT = t;
     ctx.clearRect(0, 0, W, H);
-    drawAurora(t);
+    if (cool) drawNebula(t);
+    drawAurora(t, cool ? AURORAS_COOL : AURORAS);
     for (const s of stars) place(s);
     drawLinks();
     drawStars(t, still);
@@ -928,6 +1482,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     for (const l of lines) drawLine(l);
     for (const c of comets) drawComet(c);
     ctx.globalCompositeOperation = "source-over";
+    drawBursts();
   }
 
   let last = performance.now();
@@ -939,6 +1494,21 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && soonOverla
     render(t, false);
     requestAnimationFrame(frame);
   }
+
+  /* hooks used by the secret Codes */
+  window.BG = {
+    comets: n => { for (let i = 0; i < n; i++) setTimeout(() => comets.push(spawnComet()), i * 220); },
+    burst: burst,
+    stars: n => { for (let i = 0; i < n; i++) stars.push(newStar()); linked = stars.filter(s => s.z > 0.5).slice(0, 130); },
+    cool: on => {
+      cool = on;
+      resize();
+      linked = stars.filter(s => s.z > 0.5).slice(0, 130);
+      if (on) for (let i = 0; i < 3; i++) setTimeout(() => comets.push(spawnComet()), i * 200);
+    },
+    warp: () => { boostTarget = 110; setTimeout(() => { boostTarget = 1; }, 3500); },
+    reset: () => { boostTarget = 1; cool = false; resize(); stars.length = Math.max(110, Math.min(380, Math.round(W * H / 6500))); linked = stars.filter(s => s.z > 0.5).slice(0, 130); }
+  };
 
   window.addEventListener("resize", resize);
   resize();
