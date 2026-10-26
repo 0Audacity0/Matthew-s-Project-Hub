@@ -85,11 +85,16 @@
   }
 
   /* ---------- Info button ---------- */
-  .info-btn {
+  .top-right {
     position: fixed;
     top: 20px;
     right: 24px;
     z-index: 20;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .info-btn {
     font: inherit;
     font-weight: 500;
     font-size: 15px;
@@ -102,7 +107,28 @@
     transition: background 0.2s, border-color 0.2s;
   }
   .info-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); }
-  .info-btn:focus-visible, .close-btn:focus-visible, .card:focus-visible {
+
+  .mute-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    padding: 0;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mute-btn:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); }
+  .mute-btn svg { width: 20px; height: 20px; display: block; }
+  .mute-btn .icon-off { display: none; }
+  .mute-btn.muted .icon-on { display: none; }
+  .mute-btn.muted .icon-off { display: block; }
+  .mute-btn.muted { color: var(--muted); }
+
+  .info-btn:focus-visible, .mute-btn:focus-visible, .close-btn:focus-visible, .card:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
   }
@@ -566,7 +592,7 @@
   body.bearbones h1.section-title { color: #ff0000 !important; text-decoration: underline wavy #0000ff; font-size: 34px !important; letter-spacing: 0 !important; }
   body.bearbones .section-rule { height: 6px !important; background: repeating-linear-gradient(90deg, #000 0 8px, #ff0 8px 16px) !important; }
   body.bearbones .version { color: #ff0000 !important; }
-  body.bearbones .card, body.bearbones .info-btn, body.bearbones .more-btn, body.bearbones .close-btn,
+  body.bearbones .card, body.bearbones .info-btn, body.bearbones .mute-btn, body.bearbones .more-btn, body.bearbones .close-btn,
   body.bearbones .enter-btn, body.bearbones .x-btn, body.bearbones .info-box, body.bearbones .codes-panel, body.bearbones .codes-list {
     background: #c0c0c0 !important;
     color: #000 !important;
@@ -603,7 +629,21 @@
 
 <div class="version reveal" id="version" style="--i:0"></div>
 
-<button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
+<div class="top-right">
+  <button class="mute-btn reveal" id="muteBtn" style="--i:0" type="button" aria-label="Mute music" title="Mute music">
+    <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor"/>
+      <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
+      <path d="M18.5 5.5a9 9 0 0 1 0 13"/>
+    </svg>
+    <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor"/>
+      <path d="m16 9.5 5 5"/>
+      <path d="m21 9.5-5 5"/>
+    </svg>
+  </button>
+  <button class="info-btn reveal" id="openInfo" style="--i:0" aria-haspopup="dialog">Info</button>
+</div>
 
 <main id="main"></main>
 
@@ -1522,6 +1562,16 @@ const RAIN = (function () {
 <script>
 (function () {
   var bgm = document.getElementById("bgm");
+  var muteBtn = document.getElementById("muteBtn");
+  bgm.volume = 0.6;
+
+  muteBtn.addEventListener("click", function () {
+    bgm.muted = !bgm.muted;
+    muteBtn.classList.toggle("muted", bgm.muted);
+    var label = bgm.muted ? "Unmute music" : "Mute music";
+    muteBtn.setAttribute("aria-label", label);
+    muteBtn.title = label;
+  });
   var events = ["pointerdown", "keydown", "touchstart", "click", "wheel", "mousemove"];
 
   function removeUnlock() {
